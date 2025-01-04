@@ -1,101 +1,110 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import { listReducer } from "@/reducers/listReducer";
+import { Item } from "@/types/Item";
+import { useReducer, useState } from "react";
+
+const Page = () => {
+  const [list, dispatch] = useReducer(listReducer, []);
+  const [addField, setAddField] = useState('');
+
+  const handleAddButton = () => {
+    if (addField.trim() === '') return false;
+
+    dispatch({
+      type: 'add',
+      payload: { text: addField.trim() }
+    });
+
+    setAddField('');
+  }
+
+  const handleDoneCheckbox = (id: number) => {
+    dispatch({
+      type: 'toggleDone',
+      payload: { id }
+    });
+  }
+
+  const handleEdit = (id: number) => {
+    const item = list.find(it => it.id === id);
+    if (!item) return false;
+
+    const newText = window.prompt('Edit your task', item.text);
+    if (!newText || newText.trim() === '') return false;
+
+    dispatch({
+      type: 'editText',
+      payload: { id, newText }
+    });
+  }
+
+  const handleRemove = (id: number) => {
+    if (!window.confirm('Are you sure you want to delete?')) return false;
+
+    dispatch({
+      type: 'remove',
+      payload: { id }
+    });
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+    <div className="container mx-auto">
+      <h1 className="text-center text-4xl my-4">To-Do List</h1>
+      <div className="max-w-2xl mx-auto flex rounded-md bg-gray-900 border border-gray-400 p-4 my-4">
+        <input 
+          type="text" 
+          className="flex-1 rounded-md border border-white p-3 bg-transparent text-white"
+          placeholder="Digite um item"
+          value={addField}
+          onChange={e => setAddField(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleAddButton();
+            }
+          }}
         />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        <button
+          className="p-4"
+          onClick={handleAddButton}
+        >Add</button>
+      </div>
+      <ul className="max-w-2xl mx-auto">
+        {list.map((item) => (
+          <li 
+            key={item.id}
+            className="flex p-3 my-3 border-b border-gray-700"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+            <input 
+              type="checkbox"
+              className="w-6 h-6 mr-4"
+              defaultChecked={item.done}
+              onChange={() => handleDoneCheckbox(item.id)}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+            <p 
+              className={`flex-1 text-lg ${
+                item.done ? 'line-through text-gray-500' : ''
+              }`}
+            >
+              {item.text}
+            </p>
+            <button 
+              onClick={() => handleEdit(item.id)} 
+              className="mx-4 text-white hover:text-gray-500"
+            >
+              Edit
+            </button>
+            <button 
+              onClick={() => handleRemove(item.id)} 
+              className="mx-4 text-white hover:text-gray-500"
+            >
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
+
+export default Page;
